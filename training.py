@@ -3,6 +3,7 @@ __license__ = "Apache 2"
 
 import tensorflow as tf
 import datetime
+from PIL import Image
 from tensorflow import keras
 import pathlib
 import matplotlib.pyplot as plt
@@ -17,6 +18,16 @@ VALID_DIR = pathlib.Path('data/validation')
 BATCH_SIZE = 100
 IMG_HEIGHT, IMG_WIDTH = 56, 56
 CLASS_NAMES = sorted(d.stem for d in TRAIN_DIR.glob('*'))
+
+def normalize_size(path):
+    original = Image.open(path)
+    xsize, ysize = original.size
+    if xsize == 56 and ysize == 56:
+        return
+    center_x, center_y = int((56 - xsize)/ 2), int((56 - ysize) / 2)
+    normalized = Image.new('RGB', (56,56), color='white')
+    normalized.paste(original, (center_x, center_y))
+    normalized.save(path, "PNG")
 
 
 def show_batch(image_batch, label_batch):
@@ -42,12 +53,10 @@ def decode_img(file_path):
     # resize the image to the desired size.
     return img
     try:
-        
         good_image = img.reshape((IMG_WIDTH, IMG_HEIGHT, 1))
         print(f"{file_path}: {good_image.size}")
     except:
-        return
-        # print(f"Failed to reshape {file_path} {sys.exc_info()}")
+        print(f"Failed to reshape {file_path} {sys.exc_info()}")
     
   
 
