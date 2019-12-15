@@ -1,6 +1,8 @@
 __author__ = "Jeremy Nelson"
 __license__ = "Apache 2"
 
+import argparse
+import os
 import tensorflow as tf
 import datetime
 from PIL import Image
@@ -18,6 +20,23 @@ VALID_DIR = pathlib.Path('data/validation')
 BATCH_SIZE = 100
 IMG_HEIGHT, IMG_WIDTH = 56, 56
 CLASS_NAMES = sorted(d.stem for d in TRAIN_DIR.glob('*'))
+
+def feedforward_modal():
+  model = keras.models.Sequential([
+    # input layer
+    keras.layers.Flatten(input_shape=(IMG_HEIGHT, IMG_WIDTH, 1)),
+    # first hidden layer
+    keras.layers.Dense(64, activation='relu'),
+    # output layer
+    keras.layers.Dense(len(CLASS_NAMES), activation='softmax')
+  ])
+
+  model.compile(optimizer='adam',
+                loss='categorical_crossentropy', 
+                metrics=['accuracy'])
+
+  model.summary()
+  return model
 
 def normalize_size(path):
     original = Image.open(path)
@@ -58,20 +77,42 @@ def decode_img(file_path):
     except:
         print(f"Failed to reshape {file_path} {sys.exc_info()}")
     
-  
 
 def process_path(file_path):
-    label = get_label(file_path)
-    img = decode_img(file_path)
-    return img, label
+  label = get_label(file_path)
+  img = decode_img(file_path)
+  return img, label
 
-
+def preprocess_images():
+  for row in [TRAIN_DIR, VALID_DIR]:
+    print(f"Processing all {row}")
+    for class_dir in sorted(row.iterdir()):
+      for img in class_dir.glob("*.png"):
+        normalize_size(img)
+ 
 if __name__ == '__main__':
-    current = datetime.datetime.utcnow()
-    print(f"Training Module started at {current.isoformat()}")
+  current = datetime.datetime.utcnow()
+  print(f"Training Module started at {current.isoformat()}")
+  parser = argparse.ArgumentParser()
+  parser.add_argument("action", help="Training action")
+  args = parser.parse_args()
+  if args.action == 'prep':
+    print("Preprocessing Images")
+    preprocess_images()
+  if args.action == 'run':
+    print("Building Model")
+    model = feedforward_modal()
     train_imgs, train_labels = zip(*(process_path(f_p) for f_p in TRAIN_DIR.glob('*/*')))
     valid_imgs, valid_labels = zip(*(process_path(f_p) for f_p in VALID_DIR.glob('*/*')))
-    print(np.array(train_imgs).shape)
-    print(np.array(train_labels).shape)
-    print(np.array(valid_imgs).shape)
-    print(np.array(valid_labels).shape)
+    print("Fitting model")
+    model.fit(np.array(train_imgs),
+              np.array(train_labels),
+              batch_size=100,
+              epochs=10,
+              validation_data=(np.array(valid_imgs), np.array(valid_labels))
+              )
+
+    #print(np.array(train_imgs).shape)
+    #print(np.array(train_labels).shape)
+  #print(np.array(valid_imgs).shape)
+  #print(np.array(valid_labels).shape)
