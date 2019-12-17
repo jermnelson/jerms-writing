@@ -70,10 +70,9 @@ def decode_img(file_path):
     # convert to floats in the [0,1] range.
     img = np.float32(img) / 255.0
     # resize the image to the desired size.
-    return img
     try:
         good_image = img.reshape((IMG_WIDTH, IMG_HEIGHT, 1))
-        print(f"{file_path}: {good_image.size}")
+        return good_image
     except:
         print(f"Failed to reshape {file_path} {sys.exc_info()}")
     
@@ -114,5 +113,5 @@ if __name__ == '__main__':
 
     #print(np.array(train_imgs).shape)
     #print(np.array(train_labels).shape)
-  #print(np.array(valid_imgs).shape)
-  #print(np.array(valid_labels).shape)
+    #print(np.array(valid_imgs).shape)
+    #print(np.array(valid_labels).shape)
