@@ -35,6 +35,8 @@ def feedforward_modal():
                 loss='categorical_crossentropy', 
                 metrics=['accuracy'])
 
+
+  # Model Summary
   model.summary()
   return model
 
@@ -100,6 +102,16 @@ if __name__ == '__main__':
     preprocess_images()
   if args.action == 'run':
     print("Building Model")
+    # Callbacks
+    callbacks = list([
+      keras.callbacks.ModelCheckpoint(
+        'models/ffnn.hdf5',
+        monitor='accuracy',
+        mode='max',
+        verbose=1
+     )
+    ])
+
     model = feedforward_modal()
     train_imgs, train_labels = zip(*(process_path(f_p) for f_p in TRAIN_DIR.glob('*/*')))
     valid_imgs, valid_labels = zip(*(process_path(f_p) for f_p in VALID_DIR.glob('*/*')))
@@ -108,8 +120,8 @@ if __name__ == '__main__':
               np.array(train_labels),
               batch_size=100,
               epochs=10,
-              validation_data=(np.array(valid_imgs), np.array(valid_labels))
-              )
+              validation_data=(np.array(valid_imgs), np.array(valid_labels)),
+              callbacks=callbacks)
 
     #print(np.array(train_imgs).shape)
     #print(np.array(train_labels).shape)
