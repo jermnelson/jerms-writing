@@ -32,7 +32,7 @@ def feedforward_modal():
   ])
 
   model.compile(optimizer='adam',
-                loss='categorical_crossentropy', 
+                loss='categorical_crossentropy',
                 metrics=['accuracy'])
 
 
@@ -77,7 +77,7 @@ def decode_img(file_path):
         return good_image
     except:
         print(f"Failed to reshape {file_path} {sys.exc_info()}")
-    
+
 
 def process_path(file_path):
   label = get_label(file_path)
@@ -90,7 +90,7 @@ def preprocess_images():
     for class_dir in sorted(row.iterdir()):
       for img in class_dir.glob("*.png"):
         normalize_size(img)
- 
+
 if __name__ == '__main__':
   current = datetime.datetime.utcnow()
   print(f"Training Module started at {current.isoformat()}")
