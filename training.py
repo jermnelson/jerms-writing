@@ -27,6 +27,8 @@ def feedforward_modal():
     keras.layers.Flatten(input_shape=(IMG_HEIGHT, IMG_WIDTH, 1)),
     # first hidden layer
     keras.layers.Dense(64, activation='relu'),
+    # second hidden layer
+    keras.layers.Dense(64, activation='relu'),
     # output layer
     keras.layers.Dense(len(CLASS_NAMES), activation='softmax')
   ])
@@ -54,10 +56,10 @@ def normalize_size(path):
 def show_batch(image_batch, label_batch):
     plt.figure(figsize=(10,10))
     for n in range(25):
-          ax = plt.subplot(5,5,n+1)
-          plt.imshow(np.reshape(image_batch[n], (56,56)))
-          plt.title(CLASS_NAMES[np.argwhere(label_batch[n]==1)[0][0]])
-          plt.axis('off')
+      ax = plt.subplot(5,5,n+1)
+      plt.imshow(np.reshape(image_batch[n], (56,56)))
+      plt.title(CLASS_NAMES[np.argwhere(label_batch[n]==1)[0][0]])
+      plt.axis('off')
 
 
 def get_label(file_path):
