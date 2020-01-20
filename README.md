@@ -7,3 +7,5 @@
 -  Nick Temme blog post's 
    [Using TensorFlow to create your own handwriting recognition engine](https://niektemme.com/2016/02/21/tensorflow-handwriting/)
    with corresponding [code repository](https://github.com/niektemme/tensorflow-mnist-predict).  
+-  [Handprint](https://github.com/caltechlibrary/handprint) uses external vision recognition services from Google, Microsoft, and
+   Amazon for handwriting recognition. 
