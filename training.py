@@ -121,7 +121,7 @@ if __name__ == '__main__':
     model.fit(np.array(train_imgs),
               np.array(train_labels),
               batch_size=100,
-              epochs=10,
+              epochs=20,
               validation_data=(np.array(valid_imgs), np.array(valid_labels)),
               callbacks=callbacks)
 
