@@ -13,45 +13,9 @@ import numpy as np
 import cv2
 import sys
 
-# Contants
-TRAIN_DIR = pathlib.Path('data/train')
-VALID_DIR = pathlib.Path('data/validation')
-
-BATCH_SIZE = 100
-IMG_HEIGHT, IMG_WIDTH = 56, 56
-CLASS_NAMES = sorted(d.stem for d in TRAIN_DIR.glob('*'))
-
-def feedforward_modal():
-  model = keras.models.Sequential([
-    # input layer
-    keras.layers.Flatten(input_shape=(IMG_HEIGHT, IMG_WIDTH, 1)),
-    # first hidden layer
-    keras.layers.Dense(64, activation='relu'),
-    # second hidden layer
-    keras.layers.Dense(64, activation='relu'),
-    # output layer
-    keras.layers.Dense(len(CLASS_NAMES), activation='softmax')
-  ])
-
-  model.compile(optimizer='adam',
-                loss='categorical_crossentropy',
-                metrics=['accuracy'])
-
-
-  # Model Summary
-  model.summary()
-  return model
-
-def normalize_size(path):
-    original = Image.open(path)
-    xsize, ysize = original.size
-    if xsize == 56 and ysize == 56:
-        return
-    center_x, center_y = int((56 - xsize)/ 2), int((56 - ysize) / 2)
-    normalized = Image.new('RGB', (56,56), color='white')
-    normalized.paste(original, (center_x, center_y))
-    normalized.save(path, "PNG")
-
+# Constants
+from config import CLASS_NAMES, IMG_HEIGHT, IMG_WIDTH
+from models import feedforward_modal, aiki_feedforward
 
 def show_batch(image_batch, label_batch):
     plt.figure(figsize=(10,10))
@@ -62,10 +26,10 @@ def show_batch(image_batch, label_batch):
       plt.axis('off')
 
 
-def get_label(file_path):
+def get_label(file_path, class_names=CLASS_NAMES):
     # convert the path to a list of path components
     # The second to last is the class-directory
-    return file_path.parts[-2] == np.array(CLASS_NAMES)
+    return file_path.parts[-2] == np.array(class_names)
 
 
 def decode_img(file_path):
@@ -86,12 +50,44 @@ def process_path(file_path):
   img = decode_img(file_path)
   return img, label
 
-def preprocess_images():
-  for row in [TRAIN_DIR, VALID_DIR]:
-    print(f"Processing all {row}")
-    for class_dir in sorted(row.iterdir()):
-      for img in class_dir.glob("*.png"):
-        normalize_size(img)
+def train(**kwargs):
+    print(f"Starting training {kwargs.get('name'. 'all')}")
+    callbacks = list([
+      keras.callbacks.ModelCheckpoint(
+        f"models/ffnn-{kwargs.get('name', 'all')}.hdf5",
+        monitor='accuracy',
+        mode='max',
+        verbose=1
+     )
+    ])
+
+    model = kwargs.get('model', feedforward_model())
+    train_imgs, train_labels = zip(*(process_path(f_p) for f_p in kwargs.get('train_paths', TRAIN_DIR.glob('*/*')))
+    valid_imgs, valid_labels = zip(*(process_path(f_p) for f_p in kwargs.get('valid_paths', VALID_DIR.glob('*/*'))))
+    print(f"Fitting all model")
+    model.fit(np.array(train_imgs),
+              np.array(train_labels),
+              batch_size=100,
+              epochs=10,
+              validation_data=(np.array(valid_imgs), np.array(valid_labels)),
+              callbacks=callbacks)
+
+def train_aiki():
+    print(f"Started training {' '.join(AIKI_NAMES)}"
+    train_paths, valid_paths = [], []
+    for char in AIKI_NAMES:
+        for img in TRAIN_DIR.glob(f"{char}/*"):
+            train_paths.append(img)
+        for img in VALID_DIR.glob(f"{char}/*"):
+            valid_paths.append(img) 
+    train(name="aikido",
+          model=aiki_feedforward, 
+          train_paths=train_paths, 
+          valid_paths=valid_paths)
+ 
+
+
+def train_aiki():
 
 if __name__ == '__main__':
   current = datetime.datetime.utcnow()
@@ -99,32 +95,10 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument("action", help="Training action")
   args = parser.parse_args()
-  if args.action == 'prep':
-    print("Preprocessing Images")
-    preprocess_images()
   if args.action == 'run':
     print("Building Model")
     # Callbacks
-    callbacks = list([
-      keras.callbacks.ModelCheckpoint(
-        'models/ffnn.hdf5',
-        monitor='accuracy',
-        mode='max',
-        verbose=1
-     )
-    ])
-
-    model = feedforward_modal()
-    train_imgs, train_labels = zip(*(process_path(f_p) for f_p in TRAIN_DIR.glob('*/*')))
-    valid_imgs, valid_labels = zip(*(process_path(f_p) for f_p in VALID_DIR.glob('*/*')))
-    print("Fitting model")
-    model.fit(np.array(train_imgs),
-              np.array(train_labels),
-              batch_size=100,
-              epochs=5,
-              validation_data=(np.array(valid_imgs), np.array(valid_labels)),
-              callbacks=callbacks)
-
+    
     #print(np.array(train_imgs).shape)
     #print(np.array(train_labels).shape)
     #print(np.array(valid_imgs).shape)
