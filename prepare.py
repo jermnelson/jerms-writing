@@ -13,7 +13,7 @@ def normalize_size(path):
     center_x, center_y = int((56 - xsize)/ 2), int((56 - ysize) / 2)
     normalized = Image.new('RGB', (56,56), color='white')
     normalized.paste(original, (center_x, center_y))
-    normalized.save(path, "PNG"
+    normalized.save(path, "PNG")
 
 def images(directories: list):
     start = datetime.datetime.utcnow()
