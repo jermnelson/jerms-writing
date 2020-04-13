@@ -1,7 +1,7 @@
 import pathlib
 
 TRAIN_DIR = pathlib.Path('data/train')
-VALID_DIR = pathlib.Path('data/validation')
+VALID_DIR = pathlib.Path('data/valid')
 
 
 AIKI_NAMES = ["合", "気", "道"]

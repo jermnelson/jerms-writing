@@ -6,7 +6,7 @@ from tensorflow.keras.models import Sequential  # type: ignore
 from config import AIKI_NAMES, CLASS_NAMES, IMG_HEIGHT, IMG_WIDTH
 
 
-def feedforward_modal(class_names: list = CLASS_NAMES) -> Sequential:
+def feedforward_model(class_names: list = CLASS_NAMES) -> Sequential:
     model = Sequential([
       # input layer
       Flatten(input_shape=(IMG_HEIGHT, IMG_WIDTH, 1)),

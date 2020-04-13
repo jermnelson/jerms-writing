@@ -14,8 +14,8 @@ import cv2
 import sys
 
 # Constants
-from config import CLASS_NAMES, IMG_HEIGHT, IMG_WIDTH
-from models import feedforward_modal, aiki_feedforward
+from config import CLASS_NAMES, IMG_HEIGHT, IMG_WIDTH, TRAIN_DIR, VALID_DIR
+from models import feedforward_model, aiki_feedforward
 
 def show_batch(image_batch, label_batch):
     plt.figure(figsize=(10,10))
@@ -51,7 +51,7 @@ def process_path(file_path):
   return img, label
 
 def train(**kwargs):
-    print(f"Starting training {kwargs.get('name'. 'all')}")
+    print(f"Starting training {kwargs.get('name','all')}")
     callbacks = list([
       keras.callbacks.ModelCheckpoint(
         f"models/ffnn-{kwargs.get('name', 'all')}.hdf5",
@@ -62,18 +62,18 @@ def train(**kwargs):
     ])
 
     model = kwargs.get('model', feedforward_model())
-    train_imgs, train_labels = zip(*(process_path(f_p) for f_p in kwargs.get('train_paths', TRAIN_DIR.glob('*/*')))
+    train_imgs, train_labels = zip(*(process_path(f_p) for f_p in kwargs.get('train_paths', TRAIN_DIR.glob('*/*'))))
     valid_imgs, valid_labels = zip(*(process_path(f_p) for f_p in kwargs.get('valid_paths', VALID_DIR.glob('*/*'))))
     print(f"Fitting all model")
     model.fit(np.array(train_imgs),
               np.array(train_labels),
               batch_size=100,
-              epochs=10,
+              epochs=50,
               validation_data=(np.array(valid_imgs), np.array(valid_labels)),
               callbacks=callbacks)
 
 def train_aiki():
-    print(f"Started training {' '.join(AIKI_NAMES)}"
+    print(f"Started training {' '.join(AIKI_NAMES)}")
     train_paths, valid_paths = [], []
     for char in AIKI_NAMES:
         for img in TRAIN_DIR.glob(f"{char}/*"):
@@ -86,9 +86,6 @@ def train_aiki():
           valid_paths=valid_paths)
  
 
-
-def train_aiki():
-
 if __name__ == '__main__':
   current = datetime.datetime.utcnow()
   print(f"Training Module started at {current.isoformat()}")
@@ -98,7 +95,7 @@ if __name__ == '__main__':
   if args.action == 'run':
     print("Building Model")
     # Callbacks
-    
+    train() 
     #print(np.array(train_imgs).shape)
     #print(np.array(train_labels).shape)
     #print(np.array(valid_imgs).shape)
