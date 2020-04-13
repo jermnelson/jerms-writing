@@ -2,15 +2,13 @@ __author__ = "Jeremy Nelson"
 __license__ = "Apache 2"
 
 import argparse
-import os
-import tensorflow as tf
 import datetime
-from PIL import Image
-from tensorflow import keras
+from PIL import Image  # type: ignore
+from tensorflow import keras  # type: ignore
 import pathlib
-import matplotlib.pyplot as plt
-import numpy as np
-import cv2
+import matplotlib.pyplot as plt  # type: ignore
+import numpy as np  # type: ignore
+import cv2  # type: ignore
 import sys
 
 # Constants
@@ -26,13 +24,13 @@ def show_batch(image_batch, label_batch):
       plt.axis('off')
 
 
-def get_label(file_path, class_names=CLASS_NAMES):
+def get_label(file_path: pathlib.Path, class_names: list=CLASS_NAMES):
     # convert the path to a list of path components
     # The second to last is the class-directory
     return file_path.parts[-2] == np.array(class_names)
 
 
-def decode_img(file_path):
+def decode_img(file_path: pathlib.Path) -> Image:
     # load image
     img = cv2.imread(str(file_path), cv2.IMREAD_GRAYSCALE)
     # convert to floats in the [0,1] range.
@@ -45,10 +43,11 @@ def decode_img(file_path):
         print(f"Failed to reshape {file_path} {sys.exc_info()}")
 
 
-def process_path(file_path):
-  label = get_label(file_path)
-  img = decode_img(file_path)
-  return img, label
+def process_path(file_path: pathlib.Path) -> tuple:
+    label = get_label(file_path)
+    img = decode_img(file_path)
+    return img, label
+
 
 def train(**kwargs):
     print(f"Starting training {kwargs.get('name','all')}")
@@ -57,13 +56,14 @@ def train(**kwargs):
         f"models/ffnn-{kwargs.get('name', 'all')}.hdf5",
         monitor='accuracy',
         mode='max',
-        verbose=1
-     )
+        verbose=1)
     ])
 
     model = kwargs.get('model', feedforward_model())
     train_imgs, train_labels = zip(*(process_path(f_p) for f_p in kwargs.get('train_paths', TRAIN_DIR.glob('*/*'))))
     valid_imgs, valid_labels = zip(*(process_path(f_p) for f_p in kwargs.get('valid_paths', VALID_DIR.glob('*/*'))))
+    #train_paths = kwargs.get('train_paths', TRAIN_DIR.glob('*/*'))
+    #valid_paths = kwargs.get('valid_paths', VALID_DIR.glob('*/*'))
     print(f"Fitting all model")
     model.fit(np.array(train_imgs),
               np.array(train_labels),
@@ -72,6 +72,7 @@ def train(**kwargs):
               validation_data=(np.array(valid_imgs), np.array(valid_labels)),
               callbacks=callbacks)
 
+
 def train_aiki():
     print(f"Started training {' '.join(AIKI_NAMES)}")
     train_paths, valid_paths = [], []
@@ -79,24 +80,32 @@ def train_aiki():
         for img in TRAIN_DIR.glob(f"{char}/*"):
             train_paths.append(img)
         for img in VALID_DIR.glob(f"{char}/*"):
-            valid_paths.append(img) 
+            valid_paths.append(img)
     train(name="aikido",
-          model=aiki_feedforward, 
-          train_paths=train_paths, 
+          model=aiki_feedforward,
+          train_paths=train_paths,
           valid_paths=valid_paths)
- 
+
+def train_digits():
+    print(f"Started training digits model")
+
 
 if __name__ == '__main__':
-  current = datetime.datetime.utcnow()
-  print(f"Training Module started at {current.isoformat()}")
-  parser = argparse.ArgumentParser()
-  parser.add_argument("action", help="Training action")
-  args = parser.parse_args()
-  if args.action == 'run':
-    print("Building Model")
+    current = datetime.datetime.utcnow()
+    print(f"Training Module started at {current.isoformat()}")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("action", help="Training action")
+    args = parser.parse_args()
+    if args.action == 'aiki':
+        train_aiki()
+    elif args.action == 'digits':
+        train_digits()
+    else:
+        train()
     # Callbacks
     train() 
     #print(np.array(train_imgs).shape)
     #print(np.array(train_labels).shape)
     #print(np.array(valid_imgs).shape)
     #print(np.array(valid_labels).shape)
+
